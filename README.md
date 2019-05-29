@@ -11,3 +11,7 @@ You must first run ./configure, make RF24 library for the Pi, then `make` the SH
 # Target hardware
 
 Raspberry Pi 3 with Raspbian Stretch and nRF24L01+.
+
+# Used libraries
+
+RF24 - https://github.com/nRF24/RF24
