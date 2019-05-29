@@ -1,0 +1,1 @@
+You must modify the httpd file to use the path you want. The default path is: /home/pi/shms/shms

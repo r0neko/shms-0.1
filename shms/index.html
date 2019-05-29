@@ -1,0 +1,91 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Test Senzori v1</title>
+<script src="https://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+</head>
+<body>
+<h1>Pagina Senzori</h1>
+<button id="register">Inregistrati un senzor</button>
+<div id="sensors"></div>
+<div id="json"></div>
+<script>
+$(document).ready(function() {
+	function getSensors() {
+		$.get("/sensorData", function(rB){
+			var html = '';
+			var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+				var rD = '';
+				var i = 0;
+				do {
+						var b1 = characters.indexOf(rB.charAt(i++));
+						var b2 = characters.indexOf(rB.charAt(i++));
+						var b3 = characters.indexOf(rB.charAt(i++));
+						var b4 = characters.indexOf(rB.charAt(i++));
+						var a = ( ( b1 & 0x3F ) << 2 ) | ( ( b2 >> 4 ) & 0x3 );
+						var b = ( ( b2 & 0xF  ) << 4 ) | ( ( b3 >> 2 ) & 0xF );
+						var c = ( ( b3 & 0x3  ) << 6 ) | ( b4 & 0x3F );
+						rD += String.fromCharCode(a) + (b?String.fromCharCode(b):'') + (c?String.fromCharCode(c):'');
+				} while( i < rB.length );
+			var jD = JSON.parse(rD);
+			$("div#json").html(rD);
+			for (var x = 0; x < jD.sensors.sensor.length; x++) {
+				var id = jD.sensors.sensor[x].id;
+				var status = jD.sensors.sensor[x].status;
+				var action = jD.sensors.sensor[x].action;
+				var type = jD.sensors.sensor[x].type;
+				html += "<hr><h2>Senzor(" + id + ")</h2><a>Status senzor: <i>" + status + "</i></a><br><a>Actiune senzor: <i>" + action + "</i></a><br><hr><br>";
+			}
+			$("div#sensors").html(html);
+			setTimeout(getSensors, 1);
+		}); 
+	}
+	function getRegTest() {
+		$.get("/register", function(rB){
+			var html = '';
+			var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+				var rD = '';
+				var i = 0;
+				do {
+						var b1 = characters.indexOf(rB.charAt(i++));
+						var b2 = characters.indexOf(rB.charAt(i++));
+						var b3 = characters.indexOf(rB.charAt(i++));
+						var b4 = characters.indexOf(rB.charAt(i++));
+						var a = ( ( b1 & 0x3F ) << 2 ) | ( ( b2 >> 4 ) & 0x3 );
+						var b = ( ( b2 & 0xF  ) << 4 ) | ( ( b3 >> 2 ) & 0xF );
+						var c = ( ( b3 & 0x3  ) << 6 ) | ( b4 & 0x3F );
+						rD += String.fromCharCode(a) + (b?String.fromCharCode(b):'') + (c?String.fromCharCode(c):'');
+				} while( i < rB.length );
+			var jD = JSON.parse(rD);
+			if (jD.register.isRegistering) {
+				var min = jD.register.timeLeftMinutes;
+				var sec = jD.register.timeLeftSeconds;
+				if (min.length == 1) {
+					min = "0" + jD.register.timeLeftMinutes;
+				}
+				if (sec.length == 1) {
+					sec = "0" + jD.register.timeLeftSeconds;
+				}
+				$("button#register").html("Se inregistreaza(" + min + ":" + sec + ")");
+				setTimeout(getRegTest, 500);
+			} else {
+				$("button#register").html("Inregistrati un senzor");
+				$("button#register").prop('disabled', false);
+			}
+		}); 
+	}
+	setTimeout(getSensors, 1);
+	$("button#register").on("click", function() {
+		$.post("/register", function(rB, status, xhr){
+			if (xhr.status == 200) {
+				$("button#register").prop('disabled', true);
+				setTimeout(getRegTest, 500);
+			} else {
+				alert("Nu s-a putut stabili cererea de inregistrare catre dispozitiv.\nVa rugam sa reincarcati pagina, iar daca problema persista, va rugam sa decuplati hub-ul de la alimentare si sa il realimentati dupa 10 secunde.");
+			}
+		});
+	});
+});
+</script>
+</body>
+</html>
